@@ -162,6 +162,42 @@
                  "width":18,
                  "x":695,
                  "y":126.5
+                }, 
+                {
+                 "height":0,
+                 "id":58,
+                 "name":"spawn",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":73,
+                 "y":352.5
+                }, 
+                {
+                 "gid":129,
+                 "height":18,
+                 "id":59,
+                 "name":"powerup",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":412.5,
+                 "y":287.5
+                }, 
+                {
+                 "gid":129,
+                 "height":18,
+                 "id":60,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":520.5,
+                 "y":577.5
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -170,7 +206,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":58,
+ "nextobjectid":61,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

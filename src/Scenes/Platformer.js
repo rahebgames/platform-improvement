@@ -11,6 +11,11 @@ class Platformer extends Phaser.Scene {
         this.JUMP_VELOCITY = -600;
         this.PARTICLE_VELOCITY = 50;
         this.SCALE = 2.0;
+
+        this.boost = false;
+        this.frames = 0;
+        this.cooldown = 600;
+        this.score = 0;
     }
 
     create() {
@@ -42,6 +47,7 @@ class Platformer extends Phaser.Scene {
             key: "tilemap_sheet",
             frame: 151
         });
+
         
         // Since createFromObjects returns an array of regular Sprites, we need to convert 
         // them into Arcade Physics sprites (STATIC_BODY, so they don't move) 
@@ -51,16 +57,51 @@ class Platformer extends Phaser.Scene {
         // This will be used for collision detection below.
         this.coinGroup = this.add.group(this.coins);
 
+        this.powerups = this.map.createFromObjects("Objects", {
+            name: "powerup",
+            key: "tilemap_sheet",
+            frame: 128
+        });
+        this.physics.world.enable(this.powerups, Phaser.Physics.Arcade.STATIC_BODY);
+        this.powerupGroup = this.add.group(this.powerups);
+
+        this.spawn = this.map.findObject("Objects", obj => obj.name === "spawn");
+
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(30, 345, "platformer_characters", "tile_0000.png");
+        my.sprite.player = this.physics.add.sprite(this.spawn.x, this.spawn.y, "platformer_characters", "tile_0000.png");
         my.sprite.player.setCollideWorldBounds(true);
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
+        this.scoreText = this.add.text(370, 240, "Score: " + this.score, {
+            fontSize: '16px',
+        })
+        this.scoreText.setScrollFactor(0,0);
+
+        this.coin_collect = this.add.particles(0, 0, 'kenny-particles', {
+            frame: ['star_01.png', 'star_02.png', 'star_03.png','star_04.png', 'star_05.png', 'star_06.png', 'star_07.png', 'star_08.png','star_09.png'],
+            scale: { start: 0.1, end: 0 },
+            //scale: 0.1,
+            lifespan: 100,
+            duration: 100
+        });
+        this.coin_collect.stop();
+
         // Handle collision detection with coins
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             obj2.destroy(); // remove coin on overlap
+            this.coin_collect.startFollow(obj2);
+            this.coin_collect.start();
+            this.score += 1;
+            this.scoreText.setText("Score: " + this.score);
+        });
+
+        // Handle collision detection with powerups
+        this.physics.add.overlap(my.sprite.player, this.powerupGroup, (obj1, obj2) => {
+            obj2.destroy(); // remove coin on overlap
+            this.boost = true;
+            this.frames = this.cooldown;
         });
 
         // set up Phaser-provided cursor key input
@@ -94,6 +135,13 @@ class Platformer extends Phaser.Scene {
     }
 
     update() {
+        if(this.boost) {
+            this.frames -= 1;
+            if(this.frames <= 0) {
+                this.boost = false;
+            }
+        }
+
         if(cursors.left.isDown) {
             my.sprite.player.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.resetFlip();
@@ -132,7 +180,11 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('jump');
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            if (!this.boost) {
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            } else {
+                my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY * 1.5);
+            }
         }
 
         if(Phaser.Input.Keyboard.JustDown(this.rKey)) {
